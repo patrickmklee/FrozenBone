@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dota 2 Replay Parser</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #020617;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --border: #1e293b;
+      --code: #020617;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #020617, #020617 60%, #020617);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 900px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.6rem;
+      letter-spacing: 0.3px;
+    }
+
+    p {
+      margin: 0 0 20px;
+      color: var(--muted);
+    }
+
+    form {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    input[type="url"] {
+      flex: 1;
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.95rem;
+      color: var(--text);
+      outline: none;
+    }
+
+    input::placeholder {
+      color: #64748b;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+    }
+
+    button {
+      background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #020617;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      filter: brightness(1.05);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .hint {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    pre {
+      background: var(--code);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      max-height: 420px;
+      overflow: auto;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+
+    footer {
+      margin-top: 12px;
+      font-size: 0.75rem;
+      color: #64748b;
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>Dota 2 Replay Parser</h1>
+    <p>Submit a replay URL and stream parsed events live.</p>
+
+    <form method="POST" action="/parse">
+      <input
+        type="url"
+        name="url"
+        required
+        placeholder="https://replay123.valve.net/570/8621258676_19347752.dem.bz2"
+      />
+      <button type="submit">Parse</button>
+    </form>
+
+    <div class="hint">
+      • Only Valve replay URLs<br />
+      • Output is NDJSON streamed in real time
+    </div>
+
+    <pre id="out"></pre>
+
+    <footer>
+      odota/parser · streaming NDJSON
+    </footer>
+  </div>
+
+  <!-- 10-line streaming JS -->
+  <script>
+    const f=document.querySelector("form"),o=document.getElementById("out");
+    f.onsubmit=async e=>{
+      e.preventDefault(); o.textContent="Parsing…\n";
+      const r=await fetch("/parse",{method:"POST",body:new URLSearchParams(new FormData(f))});
+      const rd=r.body.getReader(),td=new TextDecoder();
+      for(;;){const {done,value}=await rd.read(); if(done)break;
+        o.textContent+=td.decode(value,{stream:true});
+        o.scrollTop=o.scrollHeight;
+      }
+    };
+  </script>
+</body>
+</html>

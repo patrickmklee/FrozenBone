@@ -1,0 +1,17 @@
+services:
+  parser:
+    image: odota/parser:latest
+    ports:
+      - "5600:5600"
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+  web:
+    build: ./web
+    environment:
+      - PARSER_URL=http://parser:5600/
+    depends_on:
+      - parser
+    ports:
+      - "3000:3000"
